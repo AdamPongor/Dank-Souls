@@ -18,6 +18,8 @@ public class PlayerMovement : MonoBehaviour
     public float movementSpeed;
     public float rotationSpeed;
 
+    public bool sprint;
+
     private void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
@@ -34,8 +36,21 @@ public class PlayerMovement : MonoBehaviour
     public void Update()
     {
         float delta = Time.deltaTime;
-
+        sprint = inputHandler.longB_input;
         inputHandler.TickInput(delta);
+
+        HandleMovement(delta);
+        HandleRolling(delta);
+
+    }
+
+    public void HandleMovement(float delta)
+    {
+
+        if (animatorHandler.anim.GetBool("isInteracting"))
+        {
+            return;
+        }
         /*moveDirection = cameraObject.forward * inputHandler.vertical;
         moveDirection += cameraObject.right * inputHandler.horizontal;
         moveDirection.Normalize();
@@ -47,13 +62,12 @@ public class PlayerMovement : MonoBehaviour
         Vector3 projectedVelocity = Vector3.ProjectOnPlane(moveDirection, normalVector);
         rigidbody.velocity = projectedVelocity;*/
 
-        animatorHandler.UpdateAnimatorValues(inputHandler.moveAmount, 0);
+        animatorHandler.UpdateAnimatorValues(inputHandler.moveAmount, 0, sprint);
 
         if (animatorHandler.CanRotate)
         {
             HandleRotation(delta);
         }
-
     }
 
     private void HandleRotation(float delta)
@@ -79,5 +93,32 @@ public class PlayerMovement : MonoBehaviour
 
         PlayerTransform.rotation = targetRotation;
 
+    }
+
+    public void HandleRolling(float delta)
+    {
+        if (animatorHandler.anim.GetBool("isInteracting"))
+        {
+            return;
+        }
+
+        if (inputHandler.roll)
+        {
+            moveDirection = cameraObject.forward * inputHandler.vertical;
+            moveDirection += cameraObject.right * inputHandler.horizontal;
+
+            if (inputHandler.moveAmount > 0)
+            {
+                animatorHandler.PlayAnimation("Roll", true, 0.1f);
+                moveDirection.y = 0;
+                Quaternion rollRotation = Quaternion.LookRotation(moveDirection);
+                PlayerTransform.rotation = rollRotation;
+            }
+            else
+            {
+                animatorHandler.PlayAnimation("BackStep", true, 0.05f);
+            }
+        }
+        
     }
 }

@@ -10,6 +10,11 @@ public class InputHandler : MonoBehaviour
     public float mouseX;
     public float mouseY;
 
+    public bool b_input;
+    public bool roll;
+    public bool isInteracting;
+    public bool longB_input;
+
     PlayerInput inputActions;
     CameraHandler cameraHandler;
 
@@ -39,7 +44,9 @@ public class InputHandler : MonoBehaviour
             inputActions = new PlayerInput();
             inputActions.Movement.Move.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
             inputActions.Movement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
-
+            inputActions.Actions.Roll.performed += i => b_input = i.performed;
+            inputActions.Actions.Sprint.started += i => longB_input = true;
+            inputActions.Actions.Sprint.canceled += i => longB_input = false;
         }
 
         inputActions.Enable();
@@ -53,6 +60,8 @@ public class InputHandler : MonoBehaviour
     public void TickInput(float delta)
     {
         MoveInput(delta);
+        RollInput(delta);
+        SprintInput(delta);
     }
 
     private void MoveInput(float delta)
@@ -62,5 +71,25 @@ public class InputHandler : MonoBehaviour
         moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
         mouseX = cameraInput.x;
         mouseY = cameraInput.y;
+    }
+
+    private void RollInput(float delta)
+    {
+        Debug.Log(b_input.ToString());
+        if (b_input)
+        {
+            roll = true;
+            b_input = false;
+        }
+    }
+
+    private void SprintInput(float delta)
+    {
+
+        if (longB_input)
+        {
+            Debug.Log(longB_input.ToString());
+            //longB_input = false;
+        }
     }
 }
